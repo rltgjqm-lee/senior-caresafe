@@ -1,0 +1,59 @@
+/* ========================================================
+   [OSMU 제2장] S-GDS 태블릿 전용 스타일 (Tablet: 768px ~ 1023px)
+   - 패드 거치 및 양손 조작 최적화 뷰
+   - 2열 폼 그리드 및 시원한 터치 영역
+   - 5단계 스텝 탭 완전 펼침
+   ======================================================== */
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  /* 상단 헤더 및 본문 컨테이너 */
+  .top-nav-inner {
+    max-width: 720px;
+    padding: 0 20px;
+  }
+  .app-wrapper {
+    max-width: 720px;
+    padding: 16px 20px 80px 20px;
+  }
+
+  /* 카드 박스 */
+  .card-box {
+    padding: 20px;
+  }
+  .card-title {
+    font-size: 15.5px;
+  }
+
+  /* 태블릿 2열 폼 그리드 */
+  .tablet-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* 버튼 액션 바 */
+  .action-row {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-primary,
+  .btn-secondary {
+    height: 46px;
+    font-size: 14px;
+  }
+
+  /* 5단계 프로그레시브 탭 */
+  .pwa-step-tabs {
+    padding: 4px;
+    gap: 4px;
+  }
+  .pwa-tab-item {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  /* 서명 캔버스 (스타일러스 펜 / 손가락 서명에 최적화된 160px) */
+  .sig-canvas-area {
+    height: 160px;
+  }
+}

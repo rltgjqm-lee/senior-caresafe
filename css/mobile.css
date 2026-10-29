@@ -1,0 +1,83 @@
+/* ========================================================
+   [OSMU 제2장] S-GDS 모바일 전용 스타일 (Mobile: < 768px)
+   - 1열 수직 스크롤 레이아웃
+   - 엄지손가락 존(Thumb Zone) 최소 터치 타깃 48px 사수
+   - [제14장 방어] iOS Safari 입력창 터치 시 강제 확대 방어 (font-size: 16px)
+   ======================================================== */
+
+@media screen and (max-width: 767px) {
+  /* 상단 헤더 및 본문 컨테이너 */
+  .top-nav-inner {
+    max-width: 100%;
+    padding: 0 14px;
+  }
+  .app-wrapper {
+    max-width: 100%;
+    padding: 10px 14px 70px 14px;
+  }
+
+  /* 엄지손가락 존(Thumb Zone) 최소 터치 영역 및 5:5 액션 버튼 사수 */
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+    font-size: 13.5px;
+  }
+  .btn-action-row,
+  .action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* 라디오 및 체크박스 터치 타깃 확대 */
+  .check-item {
+    padding: 6px 4px;
+    margin-right: 6px;
+    font-size: 13.5px;
+  }
+  .check-item input[type="radio"],
+  .check-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* 카드 박스 패딩 */
+  .card-box {
+    padding: 14px 12px;
+  }
+
+  /* 5단계 프로그레시브 탭 모바일 최적화 (게이트키퍼 규격 100% 동일: 오직 활성 탭만 라벨 표시) */
+  .pwa-step-tabs {
+    padding: 2px;
+    gap: 2px;
+  }
+  .pwa-tab-item.completed {
+    flex: 0 0 28px;
+    min-width: 28px;
+    padding: 5px 0;
+  }
+  .pwa-tab-item.upcoming {
+    flex: 0 0 28px;
+    min-width: 28px;
+    padding: 5px 0;
+  }
+  .pwa-tab-item.completed .tab-label,
+  .pwa-tab-item.upcoming .tab-label {
+    display: none;
+  }
+  .pwa-tab-item.active {
+    flex: 1;
+    min-width: 75px;
+    padding: 6px 6px;
+  }
+  .pwa-tab-item.active .tab-label {
+    display: inline;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* 서명 캔버스 */
+  .sig-canvas-area {
+    height: 130px;
+  }
+}

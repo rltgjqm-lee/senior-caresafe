@@ -100,8 +100,18 @@ class Notifier {
       confirmBtnText = titleOrOptions.confirmText || '확인';
       callback = titleOrOptions.onConfirm || null;
     } else {
-      title = String(titleOrOptions || '알림');
-      message = String(maybeMessage || '');
+      if (maybeMessage && titleOrOptions) {
+        if (String(titleOrOptions).length > 20 && String(maybeMessage).length <= 20) {
+          title = String(maybeMessage);
+          message = String(titleOrOptions);
+        } else {
+          title = String(titleOrOptions);
+          message = String(maybeMessage);
+        }
+      } else {
+        title = '알림';
+        message = String(titleOrOptions || '');
+      }
       detailsArr = Array.isArray(details) ? details : [];
       confirmBtnText = confirmText || '확인';
       callback = onConfirm;
@@ -131,8 +141,8 @@ class Notifier {
             <p class="wrk-modal-desc">${this.escapeHtml(message).replace(/\n/g, '<br>')}</p>
             ${detailsHtml}
           </div>
-          <div class="wrk-modal-footer">
-            <button class="btn-primary-action wrk-modal-btn" id="wrkModalConfirmBtn">${this.escapeHtml(confirmBtnText)}</button>
+          <div class="wrk-modal-footer" style="padding: 12px 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn-primary" id="wrkModalConfirmBtn" style="width: auto; min-width: 84px; height: 38px; padding: 0 16px; font-size: 13px; font-weight: 700; background: #0f172a; border: 1px solid #0f172a; border-radius: 6px; color: #ffffff; cursor: pointer;">${this.escapeHtml(confirmBtnText)}</button>
           </div>
         </div>
       `;
@@ -209,9 +219,9 @@ class Notifier {
           <div class="wrk-modal-body">
             <p class="wrk-modal-desc">${this.escapeHtml(message).replace(/\n/g, '<br>')}</p>
           </div>
-          <div class="wrk-modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
-            <button class="btn-secondary-action" id="wrkModalCancelBtn" style="min-width:80px; padding:8px 14px; font-size:12px;">${this.escapeHtml(canText)}</button>
-            <button class="btn-primary-action" id="wrkModalConfirmBtn" style="min-width:80px; padding:8px 14px; font-size:12px; background:#1e293b; color:#fff;">${this.escapeHtml(cText)}</button>
+          <div class="wrk-modal-footer" style="padding: 12px 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn-secondary" id="wrkModalCancelBtn" style="width: auto; min-width: 80px; height: 38px; padding: 0 14px; font-size: 13px; font-weight: 600; border: 1px solid #cbd5e1; border-radius: 6px; color: #475569; background: #ffffff; cursor: pointer;">${this.escapeHtml(canText)}</button>
+            <button type="button" class="btn-primary" id="wrkModalConfirmBtn" style="width: auto; min-width: 84px; height: 38px; padding: 0 16px; font-size: 13px; font-weight: 700; background: #0f172a; border: 1px solid #0f172a; border-radius: 6px; color: #ffffff; cursor: pointer;">${this.escapeHtml(cText)}</button>
           </div>
         </div>
       `;

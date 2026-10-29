@@ -1,0 +1,45 @@
+/* ========================================================
+   [OSMU 제2장] S-GDS 데스크톱 PC 전용 스타일 (Desktop: ≥ 1024px)
+   - 고해상도 대화면 최적 뷰포트 고정
+   - 정갈한 중앙 정렬 및 카드 그림자(Elevation) 적용
+   - 마우스 호버 및 인터랙션 최적화
+   ======================================================== */
+
+@media screen and (min-width: 1024px) {
+  /* 상단 헤더 및 본문 컨테이너 */
+  .top-nav-inner {
+    max-width: 800px;
+    padding: 0 24px;
+  }
+  .app-wrapper {
+    max-width: 800px;
+    padding: 24px 24px 90px 24px;
+  }
+
+  /* 카드 박스 */
+  .card-box {
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border-radius: var(--radius-lg);
+  }
+  .card-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* 버튼 호버 액션 */
+  .btn-primary:hover {
+    background: #000000;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .btn-secondary:hover {
+    background: var(--navy-100);
+    border-color: var(--navy-500);
+  }
+
+  /* 서명 캔버스 */
+  .sig-canvas-area {
+    height: 160px;
+  }
+}

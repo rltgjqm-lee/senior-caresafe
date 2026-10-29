@@ -1,23 +1,36 @@
 // 시니어안심살핌 (senior-caresafe) 서비스 워커 - 오프라인 에어갭 캐시
-const CACHE_NAME = 'senior-caresafe-v1';
+const CACHE_NAME = 'senior-caresafe-v1.0.2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './css/main.css',
+  './icon.png',
+  './icon-192.png',
+  './icon-512.png',
+  './css/common.css',
+  './css/sgds.css',
+  './css/mobile.css',
+  './css/tablet.css',
+  './css/desktop.css',
   './js/app.js',
   './js/core/uid.js',
   './js/core/addressData.json',
+  './js/config/districts.js',
   './js/utils/notifier.js',
+  './js/utils/masking.js',
   './js/session/sessionManager.js',
-  './js/api/client.js'
+  './js/services/validationService.js',
+  './js/api/client.js',
+  './js/views/step1AgencyView.js',
+  './js/views/step2TargetView.js',
+  './js/views/step3WorkSelectView.js'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
-        console.warn('캐시 등록 중 일부 리소스 누락(배포 환경 반영 예정):', err);
+        console.warn('캐시 등록 중 일부 리소스 누락:', err);
       });
     }).then(() => self.skipWaiting())
   );
