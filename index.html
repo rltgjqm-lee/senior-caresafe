@@ -3,82 +3,247 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="시니어안심살핌 - 고독사 예방 및 노인맞춤돌봄 현장 모바일 PWA">
   <title>시니어안심살핌 (senior-caresafe)</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
-      background-color: #f8fafc;
-      color: #0f172a;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-      text-align: center;
-    }
-    .card {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 32px 24px;
-      max-width: 420px;
-      width: 100%;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
-    .badge {
-      display: inline-block;
-      background: #e2e8f0;
-      color: #334155;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 9999px;
-      margin-bottom: 16px;
-    }
-    h1 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 12px;
-    }
-    p {
-      font-size: 14px;
-      color: #475569;
-      line-height: 1.6;
-      margin-bottom: 24px;
-    }
-    .status {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 13px;
-      color: #2563eb;
-      font-weight: 600;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      padding: 10px 16px;
-      border-radius: 6px;
-    }
-    .dot {
-      width: 8px;
-      height: 8px;
-      background: #2563eb;
-      border-radius: 50%;
-    }
-  </style>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./css/main.css">
 </head>
 <body>
-  <div class="card">
-    <div class="badge">현장 모바일 PWA</div>
-    <h1>시니어안심살핌 (senior-caresafe)</h1>
-    <p>고독사 예방 및 노인맞춤돌봄 현장 활동가를 위한 모바일 현장 업무 지원 플랫폼입니다.</p>
-    <div class="status">
-      <div class="dot"></div>
-      <span>Cloudflare Pages 정상 연동 완료</span>
+
+  <!-- 상단 공통 헤더 -->
+  <header class="app-header">
+    <div class="header-top">
+      <h1 class="brand-title">시니어안심살핌</h1>
+      <div id="header-session-badge" class="session-indicator">세션 로딩 중...</div>
     </div>
-  </div>
+  </header>
+
+  <!-- 상단 탭 네비게이션 -->
+  <nav class="app-tabs">
+    <button type="button" class="tab-btn active" data-tab="session">활동 세션</button>
+    <button type="button" class="tab-btn" data-tab="form">상담 작성</button>
+    <button type="button" class="tab-btn" data-tab="records">사례 대장</button>
+    <button type="button" class="tab-btn" data-tab="backup">오프라인</button>
+  </nav>
+
+  <!-- 메인 뷰포트 컨텐츠 -->
+  <main class="app-content">
+
+    <!-- 1. 활동 세션 설정 탭 -->
+    <section id="tab-session" class="tab-pane active">
+      <div class="card">
+        <div class="card-title">
+          <span>현장 활동 세션 거버넌스</span>
+          <span class="badge badge-primary">정통 행정 계층</span>
+        </div>
+        <p class="form-hint" style="margin-bottom: 16px;">
+          지자체(M) ➔ 수행기관(O) ➔ 사업단(B) ➔ 참여자(U) 조직 계층에 맞추어 오늘의 활동 세션을 설정합니다.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="session-preset">지자체 및 수행기관 프리셋</label>
+          <select id="session-preset" class="form-select">
+            <option value="BUPYEONG">인천 부평구 - 부평노인인력개발센터 (O-28-237-01)</option>
+            <option value="SEO_GU">인천 서구 - 인천서구노인복지관 (O-28-260-01)</option>
+          </select>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="session-m-name">지자체 (M-UID)</label>
+            <input type="text" id="session-m-name" class="form-input" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="session-o-name">수행기관 (O-UID)</label>
+            <input type="text" id="session-o-name" class="form-input" readonly>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="session-b-uid">담당 사업단 (B-UID)</label>
+          <select id="session-b-uid" class="form-select"></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="session-date">활동 일자 (미래 일자 선택 제한)</label>
+          <input type="date" id="session-date" class="form-input">
+          <p class="form-hint">활동 일자는 오늘 또는 과거 일자만 등록 가능하며 미래 날짜는 자동 차단됩니다.</p>
+        </div>
+
+        <div class="form-group" style="margin-top: 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" style="margin-bottom: 0;">현장 참여자 명부 (2인 1조 기본)</label>
+            <button type="button" id="btn-add-participant" class="btn btn-secondary" style="height: 32px; padding: 0 10px; font-size: 12.5px;">+ 참여자 추가</button>
+          </div>
+          <p class="form-hint" style="margin-bottom: 10px;">
+            개인정보 보호를 위해 연락처는 수집하지 않으며, 오직 참여자 성명만 입력합니다.
+          </p>
+          <div id="participants-container">
+            <!-- 참여자 행 동적 생성 -->
+          </div>
+        </div>
+
+        <button type="button" id="btn-save-session" class="btn btn-primary btn-full" style="margin-top: 10px;">
+          활동 세션 저장 및 적용
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. 현장 상담/조사 작성 탭 -->
+    <section id="tab-form" class="tab-pane">
+      <div class="card">
+        <div class="card-title">
+          <span>어르신 안심살핌 상담 기록</span>
+          <span class="badge badge-success">S-GDS 연동 지원</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="record-case-uid">대상자 관리번호 (Case UID)</label>
+          <input type="text" id="record-case-uid" class="form-input" placeholder="자동 발급 (미입력 시 저장 시 채번)" readonly>
+          <p class="form-hint">S-GDS 딥링크 연계 시 원천 Case UID가 자동 매핑됩니다.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="record-name">어르신 성명 *</label>
+            <input type="text" id="record-name" class="form-input" placeholder="성명 입력">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="record-birth">생년월일 (YYMMDD)</label>
+            <input type="text" id="record-birth" class="form-input" placeholder="예: 480315" maxlength="6">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="record-gender">성별</label>
+            <select id="record-gender" class="form-select">
+              <option value="남">남성</option>
+              <option value="여">여성</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="record-phone">연락처</label>
+            <input type="tel" id="record-phone" class="form-input" placeholder="010-0000-0000">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="record-address">거주지 주소</label>
+          <input type="text" id="record-address" class="form-input" placeholder="상세 주소 입력">
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label" for="record-living-type">가구 형태</label>
+            <select id="record-living-type" class="form-select">
+              <option value="독거">독거 (단독 세대)</option>
+              <option value="노인부부">노인 부부 가구</option>
+              <option value="자녀동거">자녀 동거</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="record-risk-level">위험군 판정</label>
+            <select id="record-risk-level" class="form-select">
+              <option value="정상">정상 (일반)</option>
+              <option value="중위험군">중위험군 (주의 관찰)</option>
+              <option value="고위험군">고위험군 (집중 관리)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="record-gds-score">S-GDS 우울 검사 점수</label>
+          <input type="text" id="record-gds-score" class="form-input" placeholder="연동 시 자동 입력">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="record-notes">상담 소견 및 현장 조치 내용</label>
+          <textarea id="record-notes" class="form-textarea" placeholder="건강 상태, 주거 환경, 주요 요구사항 등을 기재합니다."></textarea>
+        </div>
+
+        <div class="btn-group" style="margin-top: 14px;">
+          <button type="button" id="btn-reset-record" class="btn btn-secondary" style="flex: 1;">초기화</button>
+          <button type="button" id="btn-save-record" class="btn btn-primary" style="flex: 2;">상담 기록 저장</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 사례 관리 대장 탭 -->
+    <section id="tab-records" class="tab-pane">
+      <div class="card">
+        <div class="card-title">
+          <span>현장 상담 기록 대장</span>
+          <span class="badge badge-primary">로컬 암호화 보관</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>순번</th>
+                <th>관리번호 (Case UID)</th>
+                <th>대상자</th>
+                <th>활동일자</th>
+                <th>판정</th>
+                <th>조사자</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="records-tbody">
+              <!-- 데이터 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 전사 표준 중앙 정렬 페이지네이션 -->
+        <div class="pagination-container">
+          <div id="pagination-total" class="pagination-info">총 0건</div>
+          <div id="pagination-nav" class="pagination-nav">
+            <!-- 페이지 버튼 -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 오프라인 에어갭 데이터 관리 탭 -->
+    <section id="tab-backup" class="tab-pane">
+      <div class="card">
+        <div class="card-title">
+          <span>오프라인 보안 에어갭 관리</span>
+          <span class="badge badge-warning">망 분리 완결</span>
+        </div>
+        <div class="alert-box">
+          통신망이 두절되었거나 폐쇄망 보안 환경인 경우, 단말기 간 파일(.wrk) 반출 및 반입을 통해 데이터를 안전하게 동기화할 수 있습니다.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">오프라인 백업 파일 내보내기</label>
+          <p class="form-hint" style="margin-bottom: 8px;">현재 단말기에 저장된 모든 세션 및 상담 기록을 보안 파일(.wrk)로 다운로드합니다.</p>
+          <button type="button" id="btn-export-backup" class="btn btn-secondary btn-full">
+            데이터 백업 파일 (.wrk) 다운로드
+          </button>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid var(--color-border); margin: 20px 0;">
+
+        <div class="form-group">
+          <label class="form-label">오프라인 백업 파일 가져오기 (복원)</label>
+          <p class="form-hint" style="margin-bottom: 8px;">
+            다른 단말기 또는 S-GDS에서 추출된 백업 파일을 불러옵니다. (테스트 보안 암호: 123456)
+          </p>
+          <input type="file" id="backup-file-input" accept=".wrk,.json" style="display: none;">
+          <button type="button" id="btn-trigger-import" class="btn btn-primary btn-full">
+            백업 파일 선택 및 데이터 복원
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="./js/app.js"></script>
 </body>
 </html>
