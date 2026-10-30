@@ -6,6 +6,7 @@
 import { notifier } from '../utils/notifier.js';
 import { maskName, maskPhone, maskAddress } from '../utils/masking.js';
 import { sessionManager } from '../session/sessionManager.js';
+import { APP_CONFIG } from '../config/appConfig.js';
 
 export class Step3WorkSelectView {
   constructor(mediator) {
@@ -278,11 +279,12 @@ export class Step3WorkSelectView {
       }));
     };
 
-    // 1. S-GDS 검사 시작 (8787 포트 PWA 이동)
+    // 1. S-GDS 검사 시작 (환경별 URL 자동 라우팅)
     btnRunSgds?.addEventListener('click', () => {
       this.mediator.isAppToAppNavigating = true;
       const payloadBase64 = createPayload();
-      const sgdsUrl = `http://localhost:8787/?action=import_target&payload=${encodeURIComponent(payloadBase64)}`;
+      const baseUrl = APP_CONFIG.urls.sgds;
+      const sgdsUrl = `${baseUrl}/?action=import_target&payload=${encodeURIComponent(payloadBase64)}`;
 
       notifier.toast('노인우울 선별검사(S-GDS)로 이동합니다...', 'info', 1500);
       setTimeout(() => {
@@ -290,11 +292,12 @@ export class Step3WorkSelectView {
       }, 300);
     });
 
-    // 2. 고독사 예방 게이트키퍼 현장조사 시작 (8888 포트 pwa-survey.html 이동)
+    // 2. 고독사 예방 게이트키퍼 현장조사 시작 (환경별 URL 자동 라우팅)
     btnRunGatekeeper?.addEventListener('click', () => {
       this.mediator.isAppToAppNavigating = true;
       const payloadBase64 = createPayload();
-      const gatekeeperUrl = `http://localhost:8888/pages/pwa-survey.html?action=import_target&payload=${encodeURIComponent(payloadBase64)}`;
+      const baseUrl = APP_CONFIG.urls.gatekeeper;
+      const gatekeeperUrl = `${baseUrl}?action=import_target&payload=${encodeURIComponent(payloadBase64)}`;
 
       notifier.toast('고독사예방게이트키퍼 현장조사로 이동합니다...', 'info', 1500);
       setTimeout(() => {

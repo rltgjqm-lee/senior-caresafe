@@ -7,6 +7,7 @@ import { notifier } from '../utils/notifier.js';
 import { DISTRICT_MAP, INCHEON_SGG_CODES } from '../config/districts.js';
 import { sessionManager, ADMIN_PRESETS } from '../session/sessionManager.js';
 import { ValidationService } from '../services/validationService.js';
+import { APP_CONFIG } from '../config/appConfig.js';
 
 export class Step1AgencyView {
   constructor(mediator) {
@@ -293,11 +294,11 @@ export class Step1AgencyView {
       }
     };
 
-    // 1. S-GDS 열기 및 설치 확인
+    // 1. S-GDS 열기 및 설치 확인 (환경별 URL 자동 라우팅)
     const btnCheckSgds = container.querySelector('#btnCheckSgdsInstall');
     const sgdsStatusText = container.querySelector('#sgdsInstallStatusText');
     btnCheckSgds?.addEventListener('click', () => {
-      window.open('http://localhost:8787', '_blank');
+      window.open(APP_CONFIG.urls.sgds, '_blank');
       localStorage.setItem('CARESHAFE_SGDS_READY', 'true');
       if (sgdsStatusText) {
         sgdsStatusText.style.color = '#047857';
@@ -308,11 +309,11 @@ export class Step1AgencyView {
       notifier.toast('노인우울(S-GDS) 앱 준비 상태가 확인되었습니다.', 'success', 2000);
     });
 
-    // 2. 게이트키퍼 열기 및 설치 확인
+    // 2. 게이트키퍼 열기 및 설치 확인 (환경별 URL 자동 라우팅)
     const btnCheckWrk = container.querySelector('#btnCheckWrkInstall');
     const wrkStatusText = container.querySelector('#wrkInstallStatusText');
     btnCheckWrk?.addEventListener('click', () => {
-      window.open('http://localhost:8888/pages/pwa-survey.html', '_blank');
+      window.open(APP_CONFIG.urls.gatekeeper, '_blank');
       localStorage.setItem('CARESHAFE_WRK_READY', 'true');
       if (wrkStatusText) {
         wrkStatusText.style.color = '#047857';

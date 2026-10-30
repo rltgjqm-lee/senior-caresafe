@@ -34,6 +34,74 @@ class AppMediator {
 
     // 앱2앱 딥링크 수신 검사
     this.handleAppToAppDeepLink();
+
+    // PWA 서비스 워커 및 모바일 자동 설치 연동
+    this.registerServiceWorker();
+    this.initPwaInstallPrompt();
+  }
+
+  registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => {
+            console.log('[CareSafe] Service Worker registered:', reg.scope);
+          })
+          .catch((err) => {
+            console.warn('[CareSafe] Service Worker registration failed:', err);
+          });
+      });
+    }
+  }
+
+  initPwaInstallPrompt() {
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // 기본 브라우저 배너 지연
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // 이미 PWA standalone 모드로 실행 중이면 설치 프롬프트 미표시
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      if (isStandalone) return;
+
+      // 상단 글로벌 네비게이션 또는 적절한 위치에 설치 버튼 표출
+      let installBanner = document.getElementById('pwaInstallBanner');
+      if (!installBanner) {
+        installBanner = document.createElement('div');
+        installBanner.id = 'pwaInstallBanner';
+        installBanner.style.cssText = 'background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; z-index: 100;';
+        installBanner.innerHTML = `
+          <span style="font-weight: 700; color: #1e40af;">📲 시니어안심살핌 앱을 홈 화면에 추가하세요.</span>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="btnDoPwaInstall" style="background: #2563eb; color: #fff; border: none; border-radius: 4px; padding: 4px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer;">앱 설치</button>
+            <button type="button" id="btnClosePwaInstall" style="background: none; border: none; font-size: 16px; color: #64748b; cursor: pointer;">&times;</button>
+          </div>
+        `;
+        document.body.prepend(installBanner);
+
+        document.getElementById('btnDoPwaInstall')?.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log('[CareSafe] PWA Install outcome:', outcome);
+            deferredPrompt = null;
+            installBanner.remove();
+          }
+        });
+
+        document.getElementById('btnClosePwaInstall')?.addEventListener('click', () => {
+          installBanner.remove();
+        });
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log('[CareSafe] PWA successfully installed');
+      const installBanner = document.getElementById('pwaInstallBanner');
+      if (installBanner) installBanner.remove();
+      notifier.toast('시니어안심살핌 앱이 홈 화면에 설치되었습니다.', 'success', 2500);
+    });
   }
 
   bindTabEvents() {
