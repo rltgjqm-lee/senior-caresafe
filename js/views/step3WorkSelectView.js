@@ -230,28 +230,59 @@ export class Step3WorkSelectView {
     });
 
     const createPayload = () => {
+      // 소속 지자체(mName) 기반 시도/시군구 추출
+      let sido = '인천광역시';
+      let sigungu = '부평구';
+      if (session.mName) {
+        const parts = session.mName.trim().split(/\s+/);
+        if (parts.length >= 2) {
+          sido = parts[0];
+          sigungu = parts[1];
+        } else if (parts.length === 1) {
+          sigungu = parts[0];
+        }
+      }
+
       const payloadObj = {
         version: '1.0',
+        // 1. 기관 정본 데이터
+        orgCode: session.oUid || orgCode,
+        orgName: session.oName || '부평노인인력개발센터',
+        mUid: session.mUid,
+        mName: session.mName,
+        sido: sido,
+        sigungu: sigungu,
+
+        // 2. 사업단 데이터
+        bUid: session.bUid,
+        buName: session.bName,
+
+        // 3. 참여자 (조사원) 데이터
+        participants: session.participants || [],
+        inspector: (session.participants || []).join(', '),
+        surveyDate: session.activityDate,
+
+        // 4. 대상자 정본 데이터
         caseUid: rawTarget.caseUid,
         targetName: rawTarget.name,
         birth: rawTarget.birth,
         gender: rawTarget.gender,
         phone: rawTarget.phone,
         address: rawTarget.address,
-        sigungu: session.sigungu || '237',
-        orgCode: session.oUid,
-        surveyDate: session.activityDate,
-        inspector: (session.participants || []).join(', '),
+
         returnUrl: `${window.location.origin}${window.location.pathname}`
       };
-      return btoa(unescape(encodeURIComponent(JSON.stringify(payloadObj))));
+      const jsonStr = JSON.stringify(payloadObj);
+      return btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+        return String.fromCharCode(parseInt(p1, 16));
+      }));
     };
 
     // 1. S-GDS 검사 시작 (8787 포트 PWA 이동)
     btnRunSgds?.addEventListener('click', () => {
       this.mediator.isAppToAppNavigating = true;
       const payloadBase64 = createPayload();
-      const sgdsUrl = `http://localhost:8787/?action=import_target&payload=${payloadBase64}`;
+      const sgdsUrl = `http://localhost:8787/?action=import_target&payload=${encodeURIComponent(payloadBase64)}`;
 
       notifier.toast('노인우울 선별검사(S-GDS)로 이동합니다...', 'info', 1500);
       setTimeout(() => {
@@ -263,7 +294,7 @@ export class Step3WorkSelectView {
     btnRunGatekeeper?.addEventListener('click', () => {
       this.mediator.isAppToAppNavigating = true;
       const payloadBase64 = createPayload();
-      const gatekeeperUrl = `http://localhost:8888/pages/pwa-survey.html?action=import_target&payload=${payloadBase64}`;
+      const gatekeeperUrl = `http://localhost:8888/pages/pwa-survey.html?action=import_target&payload=${encodeURIComponent(payloadBase64)}`;
 
       notifier.toast('고독사예방게이트키퍼 현장조사로 이동합니다...', 'info', 1500);
       setTimeout(() => {

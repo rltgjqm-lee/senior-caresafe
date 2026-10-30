@@ -162,10 +162,10 @@ export class ValidationService {
     }
 
     // 6. 거주지 도로명 주소 검증
-    const addressInput = root.querySelector('#targetAddressInput');
-    const addressVal = (rawTarget.address || addressInput?.value || '').trim();
+    const addressInput = root.querySelector('#targetBaseAddressInput') || root.querySelector('#targetAddressInput');
+    const addressVal = (rawTarget.baseAddress || rawTarget.address || addressInput?.value || '').trim();
     if (!addressVal) {
-      notifier.alert({ title: '거주지 주소 필수', message: '어르신 거주지 도로명 주소를 입력해 주십시오.' });
+      notifier.alert({ title: '거주지 주소 필수', message: '어르신 거주지 도로명 주소를 [주소 검색] 버튼으로 입력해 주십시오.' });
       addressInput?.focus();
       return false;
     }

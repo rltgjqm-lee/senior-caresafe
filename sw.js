@@ -1,5 +1,5 @@
 // 시니어안심살핌 (senior-caresafe) 서비스 워커 - 오프라인 에어갭 캐시
-const CACHE_NAME = 'senior-caresafe-v1.0.2';
+const CACHE_NAME = 'senior-caresafe-v1.0.6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
