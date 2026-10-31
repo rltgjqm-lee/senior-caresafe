@@ -22,7 +22,7 @@ export const APP_CONFIG = {
       ? 'https://sgds.autoplus7.workers.dev'
       : 'http://localhost:8787',
 
-    // 3. 고독사 예방 게이트키퍼 (현장조사 PWA)
+    // 3. 노인환경살핌 (현장조사 PWA)
     gatekeeper: isProduction
       ? 'https://wellriskkeeper.pages.dev/pages/pwa-survey.html'
       : 'http://localhost:8888/pages/pwa-survey.html'

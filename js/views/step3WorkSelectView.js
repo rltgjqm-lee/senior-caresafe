@@ -94,7 +94,7 @@ export class Step3WorkSelectView {
           ` : ''}
           ${rawTarget.wrkCompleted ? `
             <div style="margin-top: 6px; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #047857; font-weight: 700;">게이트키퍼 조사:</span>
+              <span style="color: #047857; font-weight: 700;">노인환경살핌:</span>
               <span class="badge badge-success">조사 완료</span>
             </div>
           ` : ''}
@@ -117,7 +117,7 @@ export class Step3WorkSelectView {
             </label>
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
               <input type="checkbox" id="chkTaskWrk" ${hasWrkTask ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
-              <span>2. 게이트키퍼조사</span>
+              <span>2. 노인환경살핌</span>
             </label>
           </div>
         </div>
@@ -140,10 +140,10 @@ export class Step3WorkSelectView {
             </button>
           </div>
 
-          <!-- 2번: 고독사 예방 게이트키퍼 -->
+          <!-- 2번: 노인환경살핌 -->
           <div id="cardTaskWrk" style="border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 14px; background: #ffffff; opacity: ${hasWrkTask ? '1' : '0.45'};">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <span style="font-size: 15px; font-weight: 700; color: #0f172a;">2. 고독사 예방 게이트키퍼</span>
+              <span style="font-size: 15px; font-weight: 700; color: #0f172a;">2. 노인환경살핌</span>
               ${!hasWrkTask ? `
                 <span class="badge" style="background: #f1f5f9; color: #64748b;">당일 제외</span>
               ` : (isWrkDone ? `
@@ -153,7 +153,7 @@ export class Step3WorkSelectView {
               `)}
             </div>
             <button type="button" id="btnRunGatekeeper" class="btn-secondary" style="width: 100%; height: 44px; font-size: 14px; font-weight: 700;" ${!hasWrkTask ? 'disabled' : ''}>
-              고독사예방게이트키퍼 현장조사 시작
+              노인환경살핌 현장조사 시작
             </button>
           </div>
         </div>
@@ -292,14 +292,14 @@ export class Step3WorkSelectView {
       }, 300);
     });
 
-    // 2. 고독사 예방 게이트키퍼 현장조사 시작 (환경별 URL 자동 라우팅)
+    // 2. 노인환경살핌 현장조사 시작 (환경별 URL 자동 라우팅)
     btnRunGatekeeper?.addEventListener('click', () => {
       this.mediator.isAppToAppNavigating = true;
       const payloadBase64 = createPayload();
       const baseUrl = APP_CONFIG.urls.gatekeeper;
       const gatekeeperUrl = `${baseUrl}?action=import_target&payload=${encodeURIComponent(payloadBase64)}`;
 
-      notifier.toast('고독사예방게이트키퍼 현장조사로 이동합니다...', 'info', 1500);
+      notifier.toast('노인환경살핌 현장조사로 이동합니다...', 'info', 1500);
       setTimeout(() => {
         window.location.href = gatekeeperUrl;
       }, 300);

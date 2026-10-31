@@ -99,10 +99,10 @@ export class Step1AgencyView {
               </button>
             </div>
 
-            <!-- 2. 게이트키퍼 -->
+            <!-- 2. 노인환경살핌 -->
             <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
               <div>
-                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">2. 고독사 예방 게이트키퍼</div>
+                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">2. 노인환경살핌</div>
                 <div id="wrkInstallStatusText" style="font-size: 11px; color: ${isWrkReady ? '#047857' : '#e11d48'}; font-weight: 600; margin-top: 2px;">
                   ${isWrkReady ? '✔ 설치/준비 완료' : '● 미확인 (설치 필요)'}
                 </div>
@@ -321,7 +321,7 @@ export class Step1AgencyView {
       }
       btnCheckWrk.textContent = '다시 열기';
       updateAppSetupBadge();
-      notifier.toast('고독사 게이트키퍼 앱 준비 상태가 확인되었습니다.', 'success', 2000);
+      notifier.toast('노인환경살핌 앱 준비 상태가 확인되었습니다.', 'success', 2000);
     });
   }
 
