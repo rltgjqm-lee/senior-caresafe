@@ -7,9 +7,10 @@
  * 2. 기관담당자 코드 (Staff): A-{시도2}-{시군구3}-{일련2}-{순번3} (예: A-28-710-01-001)
  * 3. 전담사업단 코드 (BU): B-{시도2}-{시군구3}-{일련2}-{BU코드} (예: B-28-710-01-GD, B-28-710-01-WR)
  * 4. 현장참여자 코드 (User): U-{시도2}-{시군구3}-{일련2}-{BU코드}-{참여자순번3} (예: U-28-710-01-GD-001)
- * 5. 수혜대상자 코드 (Case): C-{시도2}-{시군구3}-{일련2}-{가구순번3 또는 난수3} (예: C-28-710-01-001, C-28-710-01-M60)
- * 6. 조사원장 코드 (Survey): S-{시도2}-{시군구3}-{일련2}-{가구순번3}-{BU코드}-R{차수} (예: S-28-710-01-001-GD-R1, S-28-710-01-001-WR-R1)
- * 7. 감사추적 코드 (Audit): L-{16진수타임스탬프}-{16진수난수} (예: L-6718E29A-1F4A)
+ * 5. 수혜대상자 코드 (Case): C-{시도2}-{시군구3}-{일련2}-{K1001~K9999(배정) 또는 N1001~N9999(발굴)} (예: C-28-710-01-K1001, C-28-710-01-N1001)
+ * 6. 연계식별자 코드 (Link): LNK-{시도2}-{시군구3}-{일련2}-{가구코드5}-{연계순번2} (예: LNK-28-710-01-K1001-01)
+ * 7. 조사원장 코드 (Survey): S-{시도2}-{시군구3}-{일련2}-{가구코드5}-{BU코드}-R{차수} (예: S-28-710-01-K1001-GD-R1)
+ * 8. 감사추적 코드 (Audit): L-{16진수타임스탬프}-{16진수난수} (예: L-6718E29A-1F4A)
  */
 
 export class UidEngine {
@@ -62,35 +63,57 @@ export class UidEngine {
   }
 
   /**
-   * 수혜자 케이스 관리번호 생성 (정규 일련번호)
-   * @param {string} orgUid 
-   * @param {number|string} seqNumber (1 ~ 999)
-   * @returns {string}
+   * 수혜대상자 케이스 관리번호 생성 (지자체 사전 배정 가구: K 접두사 + 4자리 숫자, 총 5자리)
+   * @param {string} orgUid (예: O-28-260-01)
+   * @param {number|string} seqNumber (1001 ~ 9999 또는 'K1001')
+   * @returns {string} 예: C-28-260-01-K1001
    */
-  static generateCaseUid(orgUid, seqNumber) {
+  static generateCaseUid(orgUid = 'O-28-260-01', seqNumber = 1001) {
     const cleanOrg = this.isValidOrgUid(orgUid) ? orgUid : 'O-28-260-01';
-    const seqPadded = String(seqNumber).padStart(3, '0');
-    return `C-${cleanOrg.slice(2)}-${seqPadded}`;
+    let cleanSeq;
+    if (typeof seqNumber === 'string') {
+      const upper = seqNumber.trim().toUpperCase();
+      cleanSeq = upper.startsWith('K') ? upper : `K${upper.padStart(4, '0')}`;
+    } else {
+      cleanSeq = `K${String(seqNumber).padStart(4, '0')}`;
+    }
+    return `C-${cleanOrg.slice(2)}-${cleanSeq}`;
   }
 
   /**
-   * 현장 직접 발굴용 수혜자 케이스 관리번호 생성 (영문+숫자 3자리 난수, 46,656가지 경우의 수)
-   * @param {string} orgUid 
-   * @returns {string} 예: C-28-260-01-A7K
+   * 현장 직접 발굴용 수혜자 케이스 관리번호 생성 (N 접두사 + 4자리, 총 5자리)
+   * @param {string} orgUid (예: O-28-260-01)
+   * @param {number|string} seqNumber
+   * @returns {string} 예: C-28-260-01-N1001
    */
-  static generateFieldCaseUid(orgUid) {
+  static generateFieldCaseUid(orgUid = 'O-28-260-01', seqNumber = null) {
     const cleanOrg = this.isValidOrgUid(orgUid) ? orgUid : 'O-28-260-01';
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let code = '';
-    for (let i = 0; i < 3; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    // 순수 숫자로만 3자리 생성된 경우 마지막 자리를 영문자로 변경하여 기존 001~099 정규 배정 번호와 분리
-    if (/^\d{3}$/.test(code)) {
-      const alphaChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-      code = code.slice(0, 2) + alphaChars.charAt(Math.floor(Math.random() * alphaChars.length));
+    let code;
+    if (seqNumber !== null && seqNumber !== undefined) {
+      if (typeof seqNumber === 'string' && seqNumber.startsWith('N')) {
+        code = seqNumber;
+      } else {
+        code = `N${String(seqNumber).padStart(4, '0')}`;
+      }
+    } else {
+      const randNum = Math.floor(1000 + Math.random() * 9000);
+      code = `N${randNum}`;
     }
     return `C-${cleanOrg.slice(2)}-${code}`;
+  }
+
+  /**
+   * 연계 서비스/공문 식별자 생성: LNK-{시도2}-{시군구3}-{기관2}-{가구코드5}-{연계순번2}
+   * @param {string} caseUid (예: C-28-260-01-K1001, C-28-260-01-N1001)
+   * @param {number} linkSeq (1, 2, 3...)
+   * @returns {string} 예: LNK-28-260-01-K1001-01
+   */
+  static generateLinkUid(caseUid, linkSeq = 1) {
+    if (!caseUid || !caseUid.startsWith('C-')) {
+      throw new Error(`[UidEngine] 유효하지 않은 케이스 UID입니다: ${caseUid}`);
+    }
+    const seqPadded = String(linkSeq).padStart(2, '0');
+    return `LNK-${caseUid.slice(2)}-${seqPadded}`;
   }
 
   /**

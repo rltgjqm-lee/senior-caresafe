@@ -10,11 +10,11 @@ import { maskName, maskBirth, maskPhone, maskAddress } from '../utils/masking.js
 import { sessionManager } from '../session/sessionManager.js';
 import { ValidationService } from '../services/validationService.js';
 
-// 배정 대상자 마스터 목록 (wellriskkeeper AssignmentService 동기화)
+// 배정 대상자 마스터 목록 (wellriskkeeper AssignmentService 동기화: K1001~ 5자리 배정 표준)
 const ASSIGNED_TARGET_CASES = [
   {
-    caseUid: 'C-28-260-01-001',
-    seq: '001',
+    caseUid: 'C-28-260-01-K1001',
+    seq: 'K1001',
     name: '김만석',
     birth: '480315',
     gender: '남',
@@ -23,8 +23,8 @@ const ASSIGNED_TARGET_CASES = [
     status: '정기방문'
   },
   {
-    caseUid: 'C-28-260-01-002',
-    seq: '002',
+    caseUid: 'C-28-260-01-K1002',
+    seq: 'K1002',
     name: '이점순',
     birth: '521104',
     gender: '여',
@@ -33,8 +33,8 @@ const ASSIGNED_TARGET_CASES = [
     status: '신규배정'
   },
   {
-    caseUid: 'C-28-260-01-003',
-    seq: '003',
+    caseUid: 'C-28-260-01-K1003',
+    seq: 'K1003',
     name: '박성철',
     birth: '550720',
     gender: '남',
@@ -49,7 +49,7 @@ export class Step2TargetView {
     this.mediator = mediator;
     this.rawTarget = {
       caseUid: '',
-      seq: '001',
+      seq: 'K1001',
       name: '',
       birth: '',
       age: 0,
@@ -68,13 +68,20 @@ export class Step2TargetView {
 
     const session = sessionManager.getCurrentSession();
     const orgCode = session.oUid || 'O-28-237-01';
+    const prefix = `${orgCode.replace(/^O-/, 'C-')}-`;
 
     if (!this.rawTarget.caseUid) {
-      this.rawTarget.caseUid = `${orgCode.replace(/^O-/, 'C-')}-${this.rawTarget.seq}`;
+      this.rawTarget.caseUid = `${prefix}K1001`;
     }
 
-    const currentSeq = this.rawTarget.caseUid.split('-').pop() || '001';
-    this.rawTarget.seq = currentSeq;
+    const curUid = this.rawTarget.caseUid || `${prefix}K1001`;
+    const suffix = curUid.startsWith(prefix) ? curUid.slice(prefix.length) : curUid.slice(-5);
+    this.rawTarget.seq = suffix;
+    let paddedSuffix = suffix;
+    if (/^\d+$/.test(suffix) && suffix.length < 5) {
+      paddedSuffix = suffix.padStart(5, '0');
+    }
+    const suffixChars = paddedSuffix.padEnd(5, ' ').slice(0, 5).split('').map(c => c === ' ' ? '' : c);
     const inspectorsStr = (session.participants || []).join(', ');
 
     // 기본 주소 및 상세 주소 분리
@@ -117,15 +124,21 @@ export class Step2TargetView {
           <span class="uid-badge" id="displayTargetCaseUid">${this.rawTarget.caseUid}</span>
         </div>
 
-        <!-- 🛡️ 게이트키퍼 표준 1줄 3자리 관리번호 툴바: [관리번호: 001] + (S) (N+) (R) -->
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px; margin-bottom: 14px; background: #f8fafc; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="font-size: 12.5px; color: #334155; font-weight: 700;">관리번호:</span>
-            <input type="text" id="targetSeqInput" class="form-input" style="font-family: monospace; font-weight: 700; text-align: center; width: 62px; height: 30px; padding: 0 4px; font-size: 14px; border-radius: 15px; border: 1.5px solid #cbd5e1;" maxlength="4" placeholder="001" value="${currentSeq}">
+        <!-- 🛡️ 전사 5자리 원형 관리번호 (K/N 2대 표준) 툴바 -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px; margin-bottom: 14px; background: #f8fafc; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 6px;">
+          <div class="uid-header-group">
+            <span class="uid-fixed-prefix"><span class="uid-label-text">관리번호 : </span>${prefix}</span>
+            <div class="uid-circle-container" id="uidCirclesContainer">
+              <input type="text" maxlength="1" id="uidCircle1" class="uid-circle-box" value="${suffixChars[0] || 'K'}" autocomplete="off" autocapitalize="characters" spellcheck="false" title="첫 번째 자리 (K 또는 N)">
+              <input type="text" inputmode="numeric" maxlength="1" id="uidCircle2" class="uid-circle-box" value="${suffixChars[1] || '1'}" autocomplete="off" title="두 번째 자리 (숫자)">
+              <input type="text" inputmode="numeric" maxlength="1" id="uidCircle3" class="uid-circle-box" value="${suffixChars[2] || '0'}" autocomplete="off" title="세 번째 자리 (숫자)">
+              <input type="text" inputmode="numeric" maxlength="1" id="uidCircle4" class="uid-circle-box" value="${suffixChars[3] || '0'}" autocomplete="off" title="네 번째 자리 (숫자)">
+              <input type="text" inputmode="numeric" maxlength="1" id="uidCircle5" class="uid-circle-box" value="${suffixChars[4] || '1'}" autocomplete="off" title="다섯 번째 자리 (숫자)">
+            </div>
+            <button type="button" id="btnGenFieldUid" class="btn-nplus-circle" title="현장 신규발굴 채번">N+</button>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <button type="button" id="btnSearchUid" style="width: 30px; height: 30px; border-radius: 50%; padding: 0; font-size: 11.5px; font-weight: 800; background: #ecfdf5; border: 1.5px solid #6ee7b7; color: #047857; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;" title="배정 대상자 목록 조회">S</button>
-            <button type="button" id="btnGenFieldUid" style="width: 30px; height: 30px; border-radius: 50%; padding: 0; font-size: 11.5px; font-weight: 800; background: #fff7ed; border: 1.5px solid #fdba74; color: #c2410c; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;" title="현장 신규발굴 채번">N+</button>
             <button type="button" id="btnResetTargetForm" style="width: 30px; height: 30px; border-radius: 50%; padding: 0; font-size: 11.5px; font-weight: 800; background: #f1f5f9; border: 1.5px solid #cbd5e1; color: #475569; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;" title="관리번호 초기화">R</button>
           </div>
         </div>
@@ -210,7 +223,6 @@ export class Step2TargetView {
   }
 
   bindEvents(container, session, orgCode) {
-    const seqInput = container.querySelector('#targetSeqInput');
     const caseUidBadge = container.querySelector('#displayTargetCaseUid');
     const btnSearchUid = container.querySelector('#btnSearchUid');
     const btnGenFieldUid = container.querySelector('#btnGenFieldUid');
@@ -234,14 +246,57 @@ export class Step2TargetView {
     const modalList = container.querySelector('#targetModalList');
     const btnCloseModal = container.querySelector('#btnCloseTargetModal');
 
-    const prefix = orgCode.replace(/^O-/, 'C-');
+    const prefix = `${orgCode.replace(/^O-/, 'C-')}-`;
+    const boxes = [1, 2, 3, 4, 5].map((i) => container.querySelector(`#uidCircle${i}`));
 
-    // 관리번호 입력
-    seqInput?.addEventListener('input', (e) => {
-      const val = e.target.value.trim().toUpperCase();
-      this.rawTarget.seq = val || '001';
-      this.rawTarget.caseUid = `${prefix}-${this.rawTarget.seq}`;
-      if (caseUidBadge) caseUidBadge.textContent = this.rawTarget.caseUid;
+    const syncUid = () => {
+      const fullSuffix = boxes.map((b) => (b ? b.value : '')).join('');
+      const full = `${prefix}${fullSuffix || 'K1001'}`;
+      this.rawTarget.seq = fullSuffix || 'K1001';
+      this.rawTarget.caseUid = full;
+      if (caseUidBadge) caseUidBadge.textContent = full;
+    };
+
+    if (boxes[0]) {
+      // 첫 번째 동그라미: 숫자 0~9 전면 차단, 오직 대문자 K, N만 허용
+      boxes[0].addEventListener('input', (e) => {
+        let val = (e.target.value || '').toUpperCase();
+        if (val && !/^[KN]$/.test(val)) {
+          boxes[0].value = '';
+          notifier.toast('첫 자리는 배정(K) 또는 발굴(N)만 입력할 수 있습니다.', 'warning', 2500);
+          syncUid();
+          return;
+        }
+        boxes[0].value = val;
+        syncUid();
+        if (val && boxes[1]) {
+          boxes[1].focus();
+        }
+      });
+    }
+
+    // 2~5번째 동그라미: 순수 숫자만 허용
+    for (let i = 1; i < boxes.length; i++) {
+      const box = boxes[i];
+      if (box) {
+        box.addEventListener('input', (e) => {
+          box.value = e.target.value.replace(/[^0-9]/g, '');
+          syncUid();
+          if (box.value && boxes[i + 1]) {
+            boxes[i + 1].focus();
+          }
+        });
+      }
+    }
+
+    // 키보드 네비게이션 (백스페이스 시 이전 동그라미로 이동)
+    boxes.forEach((box, idx) => {
+      if (!box) return;
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !box.value && idx > 0 && boxes[idx - 1]) {
+          boxes[idx - 1].focus();
+        }
+      });
     });
 
     // 실시간 생년월일 입력 및 나이 자동 계산
@@ -344,7 +399,7 @@ export class Step2TargetView {
           this.rawTarget.baseAddress = '';
           this.rawTarget.detailAddress = '';
           this.rawTarget.seq = c.seq;
-          this.rawTarget.caseUid = `${prefix}-${c.seq}`;
+          this.rawTarget.caseUid = `${prefix}${c.seq}`;
 
           modal.style.display = 'none';
           this.render(container);
@@ -361,12 +416,28 @@ export class Step2TargetView {
       modal.style.display = 'none';
     });
 
-    // (N+) 현장 신규 발굴 3자리 자동 채번
+    // (N+) 현장 신규 발굴 5자리 자동 채번 (로컬 가명 원장 기반 N1001~)
     btnGenFieldUid?.addEventListener('click', () => {
-      const fieldUid = UidEngine.generateFieldCaseUid(orgCode);
-      const seqPart = fieldUid.split('-').pop();
-      this.rawTarget.caseUid = fieldUid;
-      this.rawTarget.seq = seqPart;
+      let ledger = [];
+      try {
+        const raw = localStorage.getItem('caresafe_field_uid_ledger');
+        if (raw) ledger = JSON.parse(raw);
+      } catch (e) {
+        ledger = [];
+      }
+      let nextSeq = 1001;
+      if (Array.isArray(ledger) && ledger.length > 0) {
+        const maxSeq = ledger.reduce((max, item) => Math.max(max, item.seq || 0), 1000);
+        nextSeq = maxSeq + 1;
+      }
+      const newSuffix = `N${nextSeq}`;
+      ledger.push({ uid: `${prefix}${newSuffix}`, seq: nextSeq, issuedAt: new Date().toISOString() });
+      try {
+        localStorage.setItem('caresafe_field_uid_ledger', JSON.stringify(ledger));
+      } catch (e) {}
+
+      this.rawTarget.caseUid = `${prefix}${newSuffix}`;
+      this.rawTarget.seq = newSuffix;
       this.rawTarget.name = '';
       this.rawTarget.birth = '';
       this.rawTarget.age = 0;
@@ -375,13 +446,13 @@ export class Step2TargetView {
       this.rawTarget.baseAddress = '';
       this.rawTarget.detailAddress = '';
       this.render(container);
-      notifier.toast(`현장 신규 관리번호 [${seqPart}]가 채번되었습니다.`, 'success');
+      notifier.toast(`현장 신규 관리번호 [${newSuffix}]가 채번되었습니다.`, 'success');
     });
 
-    // (R) 관리번호 리셋
+    // (R) 관리번호 리셋 (K1001)
     btnResetTargetForm?.addEventListener('click', () => {
-      this.rawTarget.seq = '001';
-      this.rawTarget.caseUid = `${prefix}-001`;
+      this.rawTarget.seq = 'K1001';
+      this.rawTarget.caseUid = `${prefix}K1001`;
       this.rawTarget.name = '';
       this.rawTarget.birth = '';
       this.rawTarget.age = 0;
@@ -390,7 +461,7 @@ export class Step2TargetView {
       this.rawTarget.baseAddress = '';
       this.rawTarget.detailAddress = '';
       this.render(container);
-      notifier.toast('관리번호 및 인적사항이 초기화되었습니다.', 'info');
+      notifier.toast("관리번호 및 인적사항이 'K1001'로 초기화되었습니다.", 'info');
     });
 
     // 성별 토글
