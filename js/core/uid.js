@@ -25,6 +25,16 @@ export class UidEngine {
   }
 
   /**
+   * 대상자 케이스 관리번호 유효성 검증 (C-{시도2}-{시군구3}-{일련2}-{5자리코드})
+   * @param {string} caseUid 
+   * @returns {boolean}
+   */
+  static isValidCaseUid(caseUid) {
+    if (!caseUid || typeof caseUid !== 'string') return false;
+    return /^C-\d{2}-\d{3}-\d{2}-(?:[KN]\d{4}|\d{3,5})$/.test(caseUid.trim());
+  }
+
+  /**
    * 기관 소속 담당자/사회복지사 고유 식별자 생성 (전사 7대 계층 표준)
    * @param {string} orgUid (예: O-28-710-01)
    * @param {number|string} seqNumber (1 ~ 999)
