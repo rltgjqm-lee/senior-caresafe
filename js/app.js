@@ -275,16 +275,29 @@ class AppMediator {
     }
   }
 
-  // S-GDS ➔ 시니어안심살핌 연계 수신 핸들러
+  // S-GDS & 게이트키퍼 ➔ 시니어안심살핌 연계 수신 핸들러 (유니코드/Base64 안전 파서)
   handleAppToAppDeepLink() {
     const urlParams = new URLSearchParams(window.location.search);
     const action = urlParams.get('action');
     const payload = urlParams.get('payload');
 
-    if (action === 'import_sgds' && payload) {
+    if (!payload || (!action?.startsWith('import_'))) return;
+
+    const parsePayload = (rawB64) => {
+      const clean = (rawB64 || '').replace(/\s/g, '+');
       try {
-        const decodedJson = decodeURIComponent(escape(atob(payload)));
-        const data = JSON.parse(decodedJson);
+        const decoded = decodeURIComponent(Array.prototype.map.call(atob(clean), (c) => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(decoded);
+      } catch (e1) {
+        return JSON.parse(decodeURIComponent(escape(atob(clean))));
+      }
+    };
+
+    if (action === 'import_sgds') {
+      try {
+        const data = parsePayload(payload);
 
         let caseUid = data.caseUid;
         if (!caseUid || !UidEngine.isValidCaseUid(caseUid)) {
@@ -292,11 +305,11 @@ class AppMediator {
           caseUid = UidEngine.generateCaseUid(orgCode);
         }
 
-        // 대상자 뷰에 연동 데이터 주입 (검사 완료 단일 표출)
+        // 대상자 뷰에 연동 데이터 주입 (우울선별 검사 완료 플래그 반영)
         this.step2View.rawTarget = {
           ...this.step2View.rawTarget,
           caseUid,
-          seq: caseUid.split('-').pop() || '001',
+          seq: caseUid.split('-').pop() || 'K1001',
           name: data.targetName || this.step2View.rawTarget.name,
           birth: data.birth || this.step2View.rawTarget.birth,
           age: this.step2View.calcAge(data.birth || this.step2View.rawTarget.birth),
@@ -308,21 +321,20 @@ class AppMediator {
 
         // 3단계(업무 선택) 화면으로 이동하여 연계 확인
         this.goToStep(3);
-        notifier.toast('S-GDS 우울선별검사가 완료되었습니다.', 'success');
+        notifier.toast('S-GDS 우울선별검사가 완료되었습니다.', 'success', 2500);
 
         // URL 히스토리 정돈
         const cleanUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
       } catch (err) {
-        console.error('연동 데이터 해석 실패:', err);
+        console.error('S-GDS 연동 데이터 해석 실패:', err);
         notifier.alert('연계 데이터 디코딩에 실패했습니다.', '연계 오류');
       }
     }
 
-    if (action === 'import_wrk' && payload) {
+    if (action === 'import_wrk') {
       try {
-        const decodedJson = decodeURIComponent(escape(atob(payload)));
-        const data = JSON.parse(decodedJson);
+        const data = parsePayload(payload);
 
         let caseUid = data.caseUid;
         if (!caseUid || !UidEngine.isValidCaseUid(caseUid)) {
@@ -330,11 +342,11 @@ class AppMediator {
           caseUid = UidEngine.generateCaseUid(orgCode);
         }
 
-        // 대상자 뷰에 연동 데이터 주입 (게이트키퍼 조사 완료 단일 표출)
+        // 대상자 뷰에 연동 데이터 주입 (노인환경살핌 조사 완료 플래그 반영)
         this.step2View.rawTarget = {
           ...this.step2View.rawTarget,
           caseUid,
-          seq: caseUid.split('-').pop() || '001',
+          seq: caseUid.split('-').pop() || 'K1001',
           name: data.targetName || this.step2View.rawTarget.name,
           birth: data.birth || this.step2View.rawTarget.birth,
           age: this.step2View.calcAge(data.birth || this.step2View.rawTarget.birth),
@@ -345,12 +357,12 @@ class AppMediator {
         };
 
         this.goToStep(3);
-        notifier.toast('고독사예방게이트키퍼 현장조사가 완료되었습니다.', 'success');
+        notifier.toast('노인환경살핌 현장조사가 완료되었습니다.', 'success', 2500);
 
         const cleanUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
       } catch (err) {
-        console.error('연동 데이터 해석 실패:', err);
+        console.error('노인환경살핌 연동 데이터 해석 실패:', err);
         notifier.alert('게이트키퍼 연계 데이터 디코딩에 실패했습니다.', '연계 오류');
       }
     }
