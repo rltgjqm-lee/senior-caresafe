@@ -67,7 +67,6 @@ export class Step3WorkSelectView {
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="font-size: 14.5px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px;">
               <span>${maskedTargetName || '어르신'} 어르신</span>
-              <span style="font-size: 12px; font-weight: 600; color: #64748b;">(${rawTarget.seq || '001'})</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="uid-badge" style="font-size: 11px;">${rawTarget.caseUid || ''}</span>

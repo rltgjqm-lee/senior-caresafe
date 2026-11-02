@@ -124,23 +124,19 @@ export class Step2TargetView {
           <span class="uid-badge" id="displayTargetCaseUid">${this.rawTarget.caseUid}</span>
         </div>
 
-        <!-- 🛡️ 전사 5자리 원형 관리번호 (K/N 2대 표준) 툴바 -->
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px; margin-bottom: 14px; background: #f8fafc; padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 6px;">
-          <div class="uid-header-group">
-            <span class="uid-fixed-prefix"><span class="uid-label-text">관리번호 : </span>${prefix}</span>
-            <div class="uid-circle-container" id="uidCirclesContainer">
-              <input type="text" maxlength="1" id="uidCircle1" class="uid-circle-box" value="${suffixChars[0] || 'K'}" autocomplete="off" autocapitalize="characters" spellcheck="false" title="첫 번째 자리 (K 또는 N)">
-              <input type="text" inputmode="numeric" maxlength="1" id="uidCircle2" class="uid-circle-box" value="${suffixChars[1] || '1'}" autocomplete="off" title="두 번째 자리 (숫자)">
-              <input type="text" inputmode="numeric" maxlength="1" id="uidCircle3" class="uid-circle-box" value="${suffixChars[2] || '0'}" autocomplete="off" title="세 번째 자리 (숫자)">
-              <input type="text" inputmode="numeric" maxlength="1" id="uidCircle4" class="uid-circle-box" value="${suffixChars[3] || '0'}" autocomplete="off" title="네 번째 자리 (숫자)">
-              <input type="text" inputmode="numeric" maxlength="1" id="uidCircle5" class="uid-circle-box" value="${suffixChars[4] || '1'}" autocomplete="off" title="다섯 번째 자리 (숫자)">
-            </div>
-            <button type="button" id="btnGenFieldUid" class="btn-nplus-circle" title="현장 신규발굴 채번">N+</button>
+        <!-- 🛡️ 전사 5자리 원형 관리번호 (K/N 2대 표준) 툴바 (단일 행 콤팩트 밀착 배치) -->
+        <div style="display: flex; align-items: center; justify-content: flex-start; margin-top: 2px; margin-bottom: 14px; background: #f8fafc; padding: 6px 8px; border-radius: 6px; border: 1px solid #e2e8f0; gap: 4px; flex-wrap: nowrap; overflow-x: auto;">
+          <span class="uid-fixed-prefix"><span class="uid-label-text">관리번호 : </span>${prefix}</span>
+          <div class="uid-circle-container" id="uidCirclesContainer">
+            <input type="text" maxlength="1" id="uidCircle1" class="uid-circle-box" value="${suffixChars[0] || 'K'}" autocomplete="off" autocapitalize="characters" spellcheck="false" title="첫 번째 자리 (K 또는 N)">
+            <input type="text" inputmode="numeric" maxlength="1" id="uidCircle2" class="uid-circle-box" value="${suffixChars[1] || '1'}" autocomplete="off" title="두 번째 자리 (숫자)">
+            <input type="text" inputmode="numeric" maxlength="1" id="uidCircle3" class="uid-circle-box" value="${suffixChars[2] || '0'}" autocomplete="off" title="세 번째 자리 (숫자)">
+            <input type="text" inputmode="numeric" maxlength="1" id="uidCircle4" class="uid-circle-box" value="${suffixChars[3] || '0'}" autocomplete="off" title="네 번째 자리 (숫자)">
+            <input type="text" inputmode="numeric" maxlength="1" id="uidCircle5" class="uid-circle-box" value="${suffixChars[4] || '1'}" autocomplete="off" title="다섯 번째 자리 (숫자)">
           </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <button type="button" id="btnSearchUid" style="width: 30px; height: 30px; border-radius: 50%; padding: 0; font-size: 11.5px; font-weight: 800; background: #ecfdf5; border: 1.5px solid #6ee7b7; color: #047857; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;" title="배정 대상자 목록 조회">S</button>
-            <button type="button" id="btnResetTargetForm" style="width: 30px; height: 30px; border-radius: 50%; padding: 0; font-size: 11.5px; font-weight: 800; background: #f1f5f9; border: 1.5px solid #cbd5e1; color: #475569; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;" title="관리번호 초기화">R</button>
-          </div>
+          <button type="button" id="btnGenFieldUid" class="btn-nplus-circle" title="현장 신규발굴 채번">N+</button>
+          <button type="button" id="btnSearchUid" style="width: 25px; height: 25px; min-width: 25px; border-radius: 50%; padding: 0; font-size: 11px; font-weight: 700; background: #ecfdf5; border: 1.5px solid #6ee7b7; color: #047857; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;" title="배정 대상자 목록 조회">S</button>
+          <button type="button" id="btnResetTargetForm" style="width: 25px; height: 25px; min-width: 25px; border-radius: 50%; padding: 0; font-size: 11px; font-weight: 700; background: #f1f5f9; border: 1.5px solid #cbd5e1; color: #475569; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; user-select: none;" title="관리번호 초기화">R</button>
         </div>
 
         <div class="form-group">
