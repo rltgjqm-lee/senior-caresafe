@@ -49,9 +49,16 @@ export class Step1AgencyView {
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="position: relative;">
           <label class="form-label">담당 사업단</label>
-          <select id="buSelect" class="form-input" style="cursor: pointer;"></select>
+          <div id="btnCustomBuSelect" class="form-input" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #ffffff; user-select: none;">
+            <span id="selectedBuText" style="font-size: 13px; font-weight: 600; color: #0f172a;">${session.bName || session.bUid || '사업단 선택'}</span>
+            <span style="font-size: 11px; color: #64748b;">▼</span>
+          </div>
+          <input type="hidden" id="buSelect" value="${session.bUid || ''}">
+
+          <!-- 인앱 커스텀 드롭다운 메뉴 레이어 (모바일 휠 피커 원천 차단) -->
+          <div id="layerCustomBuOptions" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 100; overflow: hidden;"></div>
         </div>
 
         <div class="form-group">
@@ -86,10 +93,10 @@ export class Step1AgencyView {
               통신 음영지역(지하, 엘리베이터 등)에서도 원활한 조사를 위해 아래 2개 연계 앱을 기기에 1회 이상 열어 설치(캐시) 상태를 완료해 주세요.
             </p>
 
-            <!-- 1. S-GDS -->
+            <!-- 1. 마음건강 검사 (S-GDS) -->
             <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
               <div>
-                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">1. 노인우울 선별검사 (S-GDS)</div>
+                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">1. 마음건강 검사 (S-GDS)</div>
                 <div id="sgdsInstallStatusText" style="font-size: 11px; color: ${isSgdsReady ? '#047857' : '#e11d48'}; font-weight: 600; margin-top: 2px;">
                   ${isSgdsReady ? '✔ 설치/준비 완료' : '● 미확인 (설치 필요)'}
                 </div>
@@ -99,10 +106,10 @@ export class Step1AgencyView {
               </button>
             </div>
 
-            <!-- 2. 노인환경살핌 -->
+            <!-- 2. 생활안심 검사 -->
             <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
               <div>
-                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">2. 노인환경살핌</div>
+                <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">2. 생활안심 검사</div>
                 <div id="wrkInstallStatusText" style="font-size: 11px; color: ${isWrkReady ? '#047857' : '#e11d48'}; font-weight: 600; margin-top: 2px;">
                   ${isWrkReady ? '✔ 설치/준비 완료' : '● 미확인 (설치 필요)'}
                 </div>
@@ -191,18 +198,42 @@ export class Step1AgencyView {
   }
 
   updateBuDropdown(container, sigungu, selectedBu = '') {
-    const buSelect = container.querySelector('#buSelect');
-    if (!buSelect) return;
+    const hiddenInput = container.querySelector('#buSelect');
+    const selectedText = container.querySelector('#selectedBuText');
+    const layer = container.querySelector('#layerCustomBuOptions');
+    if (!hiddenInput || !selectedText || !layer) return;
 
-    buSelect.innerHTML = '';
     const preset = sigungu === '서구' ? ADMIN_PRESETS.SEO_GU : ADMIN_PRESETS.BUPYEONG;
+    const currentBuUid = selectedBu || hiddenInput.value || preset.businessUnits[0]?.bUid || '';
 
-    preset.businessUnits.forEach((bu) => {
-      const opt = document.createElement('option');
-      opt.value = bu.bUid;
-      opt.textContent = `${bu.bName} (${bu.bUid})`;
-      if (bu.bUid === selectedBu) opt.selected = true;
-      buSelect.appendChild(opt);
+    // 현재 선택값 동기화
+    const activeBu = preset.businessUnits.find(b => b.bUid === currentBuUid) || preset.businessUnits[0];
+    if (activeBu) {
+      hiddenInput.value = activeBu.bUid;
+      selectedText.textContent = `${activeBu.bName} (${activeBu.bUid})`;
+    }
+
+    layer.innerHTML = preset.businessUnits.map((bu) => {
+      const isSelected = bu.bUid === hiddenInput.value;
+      return `
+        <div class="custom-bu-opt" data-buid="${bu.bUid}" data-bname="${bu.bName}" style="padding: 12px 14px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; ${isSelected ? 'background: #eff6ff; color: #1e40af; font-weight: 800;' : 'color: #334155;'}">
+          <span>${bu.bName} (${bu.bUid})</span>
+          ${isSelected ? '<span style="color: #2563eb; font-weight: 800;">✓</span>' : ''}
+        </div>
+      `;
+    }).join('');
+
+    // 옵션 클릭 이벤트 바인딩
+    layer.querySelectorAll('.custom-bu-opt').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const buId = opt.dataset.buid;
+        const buName = opt.dataset.bname;
+        hiddenInput.value = buId;
+        selectedText.textContent = `${buName} (${buId})`;
+        layer.style.display = 'none';
+        this.updateBuDropdown(container, sigungu, buId);
+      });
     });
   }
 
@@ -237,6 +268,19 @@ export class Step1AgencyView {
     const btnAddPart = container.querySelector('#btnAddParticipant');
     const btnSave = container.querySelector('#btnSaveAgency');
     const btnNext = container.querySelector('#btnNextToStep2');
+
+    // 사업단 인앱 커스텀 드롭다운 토글 및 바깥 클릭 닫기
+    const btnCustomBu = container.querySelector('#btnCustomBuSelect');
+    const layerCustomBu = container.querySelector('#layerCustomBuOptions');
+    btnCustomBu?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = layerCustomBu.style.display === 'block';
+      layerCustomBu.style.display = isOpen ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', () => {
+      if (layerCustomBu) layerCustomBu.style.display = 'none';
+    });
 
     // 활동 일자 미래 일자 차단 가드 1: max 속성
     const today = sessionManager.getTodayDateString();

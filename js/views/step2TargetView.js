@@ -6,7 +6,7 @@
 import { notifier } from '../utils/notifier.js';
 import { UidEngine } from '../core/uid.js';
 import { apiClient } from '../api/client.js';
-import { maskName, maskBirth, maskPhone, maskAddress } from '../utils/masking.js';
+import { maskName, maskBirth, maskPhone, maskAddress, maskDetailAddress } from '../utils/masking.js';
 import { sessionManager } from '../session/sessionManager.js';
 import { ValidationService } from '../services/validationService.js';
 
@@ -102,6 +102,7 @@ export class Step2TargetView {
     const displayBirth = maskBirth(this.rawTarget.birth);
     const displayPhone = maskPhone(this.rawTarget.phone);
     const displayBaseAddress = maskAddress(this.rawTarget.baseAddress || this.rawTarget.address);
+    const displayDetailAddress = maskDetailAddress(this.rawTarget.detailAddress);
 
     container.innerHTML = `
       <!-- 1. 상단: 참여기관 및 활동 현황 요약 바 (고정 플랫형) -->
@@ -173,13 +174,13 @@ export class Step2TargetView {
             <button type="button" class="btn-secondary" id="btnSearchAddress" style="height: 42px; padding: 0 14px; font-size: 13px; font-weight: 600; width: auto; flex: initial; white-space: nowrap;">주소 검색</button>
           </div>
           <div style="margin-top: 6px;">
-            <input type="text" id="targetDetailAddressInput" class="form-input" placeholder="상세주소 입력 (예: 101동 202호, 반지하 등)" value="${this.rawTarget.detailAddress || ''}">
+            <input type="text" id="targetDetailAddressInput" class="form-input" placeholder="상세주소 입력 (예: 101동 202호, 반지하 등)" value="${displayDetailAddress}">
           </div>
         </div>
 
         ${(this.rawTarget.gdsCompleted || this.rawTarget.gdsScore !== null) ? `
           <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 12.5px; font-weight: 700; color: #1e40af;">S-GDS 우울 선별검사 연계</span>
+            <span style="font-size: 12.5px; font-weight: 700; color: #1e40af;">마음건강 검사 (S-GDS) 연계</span>
             <span class="badge badge-success">검사 완료</span>
           </div>
         ` : ''}

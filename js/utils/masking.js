@@ -56,3 +56,10 @@ export function maskUid(uid) {
   }
   return uid;
 }
+
+// 상세 주소(동·호수 등) 마스킹 (예: 104동 502호 ➔ ***동 ***호)
+export function maskDetailAddress(detail) {
+  if (!detail) return '';
+  const str = detail.trim();
+  return str.replace(/\d+/g, '***');
+}
