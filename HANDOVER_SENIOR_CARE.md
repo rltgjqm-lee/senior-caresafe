@@ -153,3 +153,50 @@
 한 가구의 현장 방문 보고를 마쳤을 때 하단에 딱 2개의 큰 버튼만 노출하여 어르신 참여자의 사용성을 극대화한다:
 1. **`[다음 어르신 방문]`**: 2단계로 복귀하여 다음 종이 관리번호(K1002 등) 조회 및 연속 방문 진행.
 2. **`[오늘 활동 완료 (귀가)]`**: 당일 일정이 끝났으므로 D1 `participant_attendance` 원장의 퇴근 시각을 기록하고, 노인일자리 1일 법정 표준인 **3시간(180분) 정상 활동 완료를 확정 마감**.
+
+---
+
+## 9. 2026-11-06 PWA 2대 독립 모듈화(SW/Manifest) 및 공통 기능 목록 명세
+
+> **🚨 발표 진행에 따른 원격 배포 동결 철칙**:  
+> 2026-11-06 금일 담당 공무원의 대외 기관 발표 및 현장 시연이 실시간 진행 중이므로, 발표 도중 캐시 충돌이나 예기치 않은 세션 단절을 방지하기 위해 **모든 원격 Git 업로드는 금일 전면 동결(Freeze)하고 내일 일괄 반영**합니다.
+
+### 1) 사업단별 PWA Service Worker & Manifest 독립 관리 규격
+
+현장 모바일 웹 앱이 1개 단일 PWA에 머무르지 않고 [대표 검사 PWA]와 [사업단 활동 PWA]로 다변화됨에 따라, **아이콘, 서비스 워커(sw), 매니페스트(manifest)를 1:1로 완전 격리하여 모듈별 독립 업데이트** 체계를 유지합니다.
+
+| 구분 | **1. 대표 검사 PWA (생활안심 검사)** | **2. 사업단 활동 PWA (시니어안심살핌)** |
+| :--- | :--- | :--- |
+| **타깃 화면** | `index.html` (또는 `pages/pwa-survey.html`) | `pages/pwa-activity.html` |
+| **설치 앱 명칭** | **`생활안심 검사`** (`short_name: 생활안심`) | **`시니어안심살핌 (사업단 활동)`** (`short_name: 시니어안심살핌`) |
+| **전용 매니페스트** | `manifest.json` (`start_url: ./index.html`) | **`manifest-activity.json`** (`start_url: ./pages/pwa-activity.html`) |
+| **전용 서비스 워커** | `sw.js` (대표 검사용 독립 캐시) | **`sw-activity.js`** (사업단 전용 독립 캐시) |
+| **독립 수명주기** | 고독사 예방 검사 로직 수정 시 단독 갱신 | 4대 사업단 활동 서식/퇴근 로직 수정 시 **검사 앱 영향 0% 완전 격리** |
+
+* **익일 배포 작업**: 로컬에 분리 구축된 `manifest-activity.json`, `sw-activity.js`, `pwa-activity.html` 연동 코드를 발표 종료 후 내일 안전하게 원격 Git에 배포합니다.
+
+---
+
+### 2) 3대 프로젝트 공통 활용 기능 목록 (Common Shared Capabilities)
+
+`wellriskkeeper`(복지부 마스터), `bupyeong-seniorcare`(부평구 시범), `senior-caresafe`(현장 PWA) 3대 시스템 전반에서 공통 표준으로 재사용되는 핵심 컴포넌트 목록입니다.
+
+1. **통신 및 네트워크 계층**:
+   - `ApiClient` (`js/api/apiClient.js`): 공통 Request Wrapper, 에러 핸들링, Network-First 전략 연동.
+   - `offlineSyncService`: 음영지역 오프라인 IndexedDB 보관 및 온라인 복귀 시 자동 백그라운드 동기화.
+2. **UI 공통 인터랙션 & 피드백**:
+   - `notifier` (`js/utils/notifier.js`): 상단 토스트 알림, 확인(Confirm) 다이얼로그, 긴급 경보 모달.
+   - `signaturePad` (`js/utils/signaturePad.js`): HTML5 Canvas 기반 2인 1조 현장 참여자 전자서명 및 WebP/PNG 변환.
+   - `5:5 스위치 토글` (`obs-btn-switch`): 모바일 터치 친화형 성별, 접촉 방식, 이상징후 라디오 대체 컨트롤.
+3. **보안 및 개인정보보호 (PII Guard)**:
+   - `mask` (`js/utils/mask.js`): 개인정보보호법에 부합하는 성명(`홍*동`), 상세주소(`*** ***`), 연락처(`010-****-1234`) 동적 마스킹.
+   - `uid` (`js/core/uid.js`): 전사 8대 식별자 체계(`O-`, `A-`, `B-`, `U-`, `C-`, `LNK-`, `S-`, `ATT-`) 자동 채번 및 무결성 검증.
+4. **증빙 및 서식 출력 엔진**:
+   - `html2pdf.bundle.min.js`: A4 표준 서식(활동일지, 선별 검사표) 즉시 인쇄 및 PDF 저장.
+   - `ExcelJS` (`lib/exceljs.min.js`): 기관 보관용 당일 활동 내역 및 참여자 명부 엑셀(.xlsx) 내보내기.
+5. **GIS 공간정보 & 위치 확인**:
+   - Daum/Kakao Postcode Service: 모바일 친화형 인앱 도로명 주소 검색 및 지번 자동 매핑.
+   - Leaflet.js & SGIS Geocoder: 수혜 대상자 가택 위·경도 정밀 좌표 변환 및 실시간 관제 맵 마커 표출.
+6. **현장 안부 대전제 가드 (Guard Condition)**:
+   - 3단계 현장공통 안부 상태(`대면 접촉`, `비대면 접촉`, `부재 / 인기척 없음`)에 따른 실내 관찰 항목(잔반, 치아, 가택환경)의 동적 스위칭 및 허위 데이터 원천 차단.
+
