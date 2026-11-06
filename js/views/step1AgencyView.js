@@ -399,6 +399,10 @@ export class Step1AgencyView {
     const mUid = `M-28-${sggCode}`;
     const oUid = `O-28-${sggCode}-01`;
 
+    const preset = sigungu === '서구' ? ADMIN_PRESETS.SEO_GU : ADMIN_PRESETS.BUPYEONG;
+    const currentBu = preset.businessUnits.find(b => b.bUid === buSelect.value);
+    const bName = currentBu ? currentBu.bName : (container.querySelector('#selectedBuText')?.textContent?.split('(')[0]?.trim() || buSelect.value);
+
     try {
       await sessionManager.saveSession({
         sido,
@@ -408,7 +412,7 @@ export class Step1AgencyView {
         oUid,
         oName: agencyName,
         bUid: buSelect.value,
-        bName: buSelect.options[buSelect.selectedIndex]?.textContent || buSelect.value,
+        bName,
         activityDate,
         participants: this.participants
       });
