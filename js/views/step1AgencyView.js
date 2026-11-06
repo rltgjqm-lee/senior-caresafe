@@ -44,8 +44,25 @@ export class Step1AgencyView {
         <div class="form-group">
           <label class="form-label">기관 소재지 (소속 지자체)</label>
           <div style="display: flex; gap: 8px;">
-            <select id="sidoSelect" class="form-input" style="flex: 1; cursor: pointer;"></select>
-            <select id="sigunguSelect" class="form-input" style="flex: 1; cursor: pointer;"></select>
+            <!-- 시/도 인앱 커스텀 드롭다운 -->
+            <div style="flex: 1; position: relative;">
+              <div id="btnCustomSidoSelect" class="form-input" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #ffffff; user-select: none;">
+                <span id="selectedSidoText" style="font-size: 13px; font-weight: 600; color: #0f172a;">${currentSido}</span>
+                <span style="font-size: 11px; color: #64748b;">▼</span>
+              </div>
+              <input type="hidden" id="sidoSelect" value="${currentSido}">
+              <div id="layerCustomSidoOptions" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 220px; overflow-y: auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 120;"></div>
+            </div>
+
+            <!-- 시/군/구 인앱 커스텀 드롭다운 -->
+            <div style="flex: 1; position: relative;">
+              <div id="btnCustomSigunguSelect" class="form-input" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #ffffff; user-select: none;">
+                <span id="selectedSigunguText" style="font-size: 13px; font-weight: 600; color: #0f172a;">${currentSigungu}</span>
+                <span style="font-size: 11px; color: #64748b;">▼</span>
+              </div>
+              <input type="hidden" id="sigunguSelect" value="${currentSigungu}">
+              <div id="layerCustomSigunguOptions" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 220px; overflow-y: auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 120;"></div>
+            </div>
           </div>
         </div>
 
@@ -134,47 +151,77 @@ export class Step1AgencyView {
     this.bindEvents(container);
   }
 
-  // 전국 17개 시도/시군구 주소 엔진 동적 초기화
+  // 전국 17개 시도/시군구 인앱 커스텀 드롭다운 엔진 (모바일 휠 피커 원천 차단)
   initDistrictDropdowns(container, defaultSido, defaultSigungu) {
-    const sidoSel = container.querySelector('#sidoSelect');
-    const sigunguSel = container.querySelector('#sigunguSelect');
-    if (!sidoSel || !sigunguSel) return;
+    const hiddenSido = container.querySelector('#sidoSelect');
+    const selectedSidoText = container.querySelector('#selectedSidoText');
+    const layerSido = container.querySelector('#layerCustomSidoOptions');
 
-    // 시도 옵션 렌더링
-    sidoSel.innerHTML = '<option value="">시/도 선택</option>';
-    Object.keys(DISTRICT_MAP).forEach((sido) => {
-      const opt = document.createElement('option');
-      opt.value = sido;
-      opt.textContent = sido;
-      if (sido === defaultSido) opt.selected = true;
-      sidoSel.appendChild(opt);
-    });
+    const hiddenSgg = container.querySelector('#sigunguSelect');
+    const selectedSggText = container.querySelector('#selectedSigunguText');
+    const layerSgg = container.querySelector('#layerCustomSigunguOptions');
 
-    // 시군구 렌더링 함수
-    const updateSigungu = (sido, selectedSgg = '') => {
-      sigunguSel.innerHTML = '<option value="">시/군/구 선택</option>';
-      const list = DISTRICT_MAP[sido] || [];
-      list.forEach((sgg) => {
-        const opt = document.createElement('option');
-        opt.value = sgg;
-        opt.textContent = sgg;
-        if (sgg === selectedSgg) opt.selected = true;
-        sigunguSel.appendChild(opt);
+    if (!hiddenSido || !selectedSidoText || !layerSido || !hiddenSgg || !selectedSggText || !layerSgg) return;
+
+    // 시/도 옵션 렌더링
+    const renderSidoOptions = (curSido) => {
+      layerSido.innerHTML = Object.keys(DISTRICT_MAP).map(sido => {
+        const isSelected = sido === curSido;
+        return `
+          <div class="custom-sido-opt" data-sido="${sido}" style="padding: 10px 14px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; ${isSelected ? 'background: #eff6ff; color: #1e40af; font-weight: 800;' : 'color: #334155;'}">
+            <span>${sido}</span>
+            ${isSelected ? '<span style="color: #2563eb; font-weight: 800;">✓</span>' : ''}
+          </div>
+        `;
+      }).join('');
+
+      layerSido.querySelectorAll('.custom-sido-opt').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const chosenSido = opt.dataset.sido;
+          hiddenSido.value = chosenSido;
+          selectedSidoText.textContent = chosenSido;
+          layerSido.style.display = 'none';
+          renderSidoOptions(chosenSido);
+          updateSigungu(chosenSido);
+        });
       });
-
-      const currentChosenSgg = sigunguSel.value || selectedSgg;
-      this.updateOrgCodeAndPreset(container, sido, currentChosenSgg);
     };
 
-    updateSigungu(sidoSel.value || defaultSido, defaultSigungu);
+    // 시/군/구 옵션 렌더링
+    const updateSigungu = (sido, selectedSgg = '') => {
+      const list = DISTRICT_MAP[sido] || [];
+      const curSgg = selectedSgg || (list.includes(hiddenSgg.value) ? hiddenSgg.value : (list[0] || ''));
+      hiddenSgg.value = curSgg;
+      selectedSggText.textContent = curSgg || '시/군/구 선택';
 
-    sidoSel.addEventListener('change', (e) => {
-      updateSigungu(e.target.value);
-    });
+      layerSgg.innerHTML = list.map(sgg => {
+        const isSelected = sgg === curSgg;
+        return `
+          <div class="custom-sgg-opt" data-sgg="${sgg}" style="padding: 10px 14px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; ${isSelected ? 'background: #eff6ff; color: #1e40af; font-weight: 800;' : 'color: #334155;'}">
+            <span>${sgg}</span>
+            ${isSelected ? '<span style="color: #2563eb; font-weight: 800;">✓</span>' : ''}
+          </div>
+        `;
+      }).join('');
 
-    sigunguSel.addEventListener('change', (e) => {
-      this.updateOrgCodeAndPreset(container, sidoSel.value, e.target.value);
-    });
+      layerSgg.querySelectorAll('.custom-sgg-opt').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const chosenSgg = opt.dataset.sgg;
+          hiddenSgg.value = chosenSgg;
+          selectedSggText.textContent = chosenSgg;
+          layerSgg.style.display = 'none';
+          updateSigungu(sido, chosenSgg);
+          this.updateOrgCodeAndPreset(container, sido, chosenSgg);
+        });
+      });
+
+      this.updateOrgCodeAndPreset(container, sido, curSgg);
+    };
+
+    renderSidoOptions(hiddenSido.value || defaultSido);
+    updateSigungu(hiddenSido.value || defaultSido, defaultSigungu);
   }
 
   updateOrgCodeAndPreset(container, sido, sigungu) {
@@ -269,16 +316,41 @@ export class Step1AgencyView {
     const btnSave = container.querySelector('#btnSaveAgency');
     const btnNext = container.querySelector('#btnNextToStep2');
 
-    // 사업단 인앱 커스텀 드롭다운 토글 및 바깥 클릭 닫기
+    // 인앱 커스텀 드롭다운 토글 및 상호 닫기 바인딩
+    const btnCustomSido = container.querySelector('#btnCustomSidoSelect');
+    const layerCustomSido = container.querySelector('#layerCustomSidoOptions');
+    const btnCustomSgg = container.querySelector('#btnCustomSigunguSelect');
+    const layerCustomSgg = container.querySelector('#layerCustomSigunguOptions');
     const btnCustomBu = container.querySelector('#btnCustomBuSelect');
     const layerCustomBu = container.querySelector('#layerCustomBuOptions');
+
+    btnCustomSido?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (layerCustomSgg) layerCustomSgg.style.display = 'none';
+      if (layerCustomBu) layerCustomBu.style.display = 'none';
+      const isOpen = layerCustomSido.style.display === 'block';
+      layerCustomSido.style.display = isOpen ? 'none' : 'block';
+    });
+
+    btnCustomSgg?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (layerCustomSido) layerCustomSido.style.display = 'none';
+      if (layerCustomBu) layerCustomBu.style.display = 'none';
+      const isOpen = layerCustomSgg.style.display === 'block';
+      layerCustomSgg.style.display = isOpen ? 'none' : 'block';
+    });
+
     btnCustomBu?.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (layerCustomSido) layerCustomSido.style.display = 'none';
+      if (layerCustomSgg) layerCustomSgg.style.display = 'none';
       const isOpen = layerCustomBu.style.display === 'block';
       layerCustomBu.style.display = isOpen ? 'none' : 'block';
     });
 
     document.addEventListener('click', () => {
+      if (layerCustomSido) layerCustomSido.style.display = 'none';
+      if (layerCustomSgg) layerCustomSgg.style.display = 'none';
       if (layerCustomBu) layerCustomBu.style.display = 'none';
     });
 
