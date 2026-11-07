@@ -413,24 +413,43 @@ export class Step2TargetView {
       modal.style.display = 'none';
     });
 
-    // (N+) 현장 신규 발굴 5자리 자동 채번 (로컬 가명 원장 기반 N1001~)
+    // (N+) 현장 신규 발굴 5자리 자동 채번 (로컬 가명 원장 기반 N1001~, 단말기 대역 분리)
     btnGenFieldUid?.addEventListener('click', () => {
       let ledger = [];
       try {
-        const raw = localStorage.getItem('caresafe_field_uid_ledger');
+        const raw = localStorage.getItem('wellrisk_field_uid_ledger') || localStorage.getItem('caresafe_field_uid_ledger');
         if (raw) ledger = JSON.parse(raw);
       } catch (e) {
         ledger = [];
       }
-      let nextSeq = 1001;
-      if (Array.isArray(ledger) && ledger.length > 0) {
-        const maxSeq = ledger.reduce((max, item) => Math.max(max, item.seq || 0), 1000);
-        nextSeq = maxSeq + 1;
-      }
-      const newSuffix = `N${nextSeq}`;
-      ledger.push({ uid: `${prefix}${newSuffix}`, seq: nextSeq, issuedAt: new Date().toISOString() });
+
+      let baseSeq = 1000;
       try {
-        localStorage.setItem('caresafe_field_uid_ledger', JSON.stringify(ledger));
+        const storedBase = localStorage.getItem('wellrisk_device_base_seq');
+        if (storedBase && !isNaN(parseInt(storedBase, 10))) {
+          baseSeq = parseInt(storedBase, 10);
+        }
+      } catch (e) {
+        baseSeq = 1000;
+      }
+
+      let maxSeq = baseSeq;
+      if (Array.isArray(ledger)) {
+        ledger.forEach((item) => {
+          const num = parseInt(item.seq, 10);
+          if (!isNaN(num) && num >= baseSeq && num < baseSeq + 1000) {
+            if (num > maxSeq) {
+              maxSeq = num;
+            }
+          }
+        });
+      }
+
+      const nextSeq = maxSeq + 1;
+      const newSuffix = `N${nextSeq}`;
+      ledger.push({ uid: `${prefix}${newSuffix}`, suffix: newSuffix, seq: nextSeq, issuedAt: new Date().toISOString() });
+      try {
+        localStorage.setItem('wellrisk_field_uid_ledger', JSON.stringify(ledger));
       } catch (e) {}
 
       this.rawTarget.caseUid = `${prefix}${newSuffix}`;

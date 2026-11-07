@@ -93,10 +93,10 @@ export class UidEngine {
   /**
    * 현장 직접 발굴용 수혜자 케이스 관리번호 생성 (N 접두사 + 4자리, 총 5자리)
    * @param {string} orgUid (예: O-28-260-01)
-   * @param {number|string} seqNumber
+   * @param {number|string} seqNumber 발굴 순번 (기본: 1001, 로컬 원장 연동)
    * @returns {string} 예: C-28-260-01-N1001
    */
-  static generateFieldCaseUid(orgUid = 'O-28-260-01', seqNumber = null) {
+  static generateFieldCaseUid(orgUid = 'O-28-260-01', seqNumber = 1001) {
     const cleanOrg = this.isValidOrgUid(orgUid) ? orgUid : 'O-28-260-01';
     let code;
     if (seqNumber !== null && seqNumber !== undefined) {
@@ -106,8 +106,7 @@ export class UidEngine {
         code = `N${String(seqNumber).padStart(4, '0')}`;
       }
     } else {
-      const randNum = Math.floor(1000 + Math.random() * 9000);
-      code = `N${randNum}`;
+      code = 'N1001';
     }
     return `C-${cleanOrg.slice(2)}-${code}`;
   }
